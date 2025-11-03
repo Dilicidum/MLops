@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import sqlite3
 import yaml
+import os
 import pickle
 from pathlib import Path
 from sklearn.model_selection import train_test_split
@@ -16,7 +17,8 @@ from datetime import datetime
 with open('config.yaml', 'r') as f:
     config = yaml.safe_load(f)
 
-mlflow.set_tracking_uri(config['mlflow']['tracking_uri'])
+tracking_uri = os.getenv("MLFLOW_TRACKING_URI", config['mlflow']['tracking_uri'])
+mlflow.set_tracking_uri(tracking_uri)
 mlflow.set_experiment(config['mlflow']['experiment_name'])
 
 
