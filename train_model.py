@@ -17,11 +17,14 @@ from datetime import datetime
 with open('config.yaml', 'r') as f:
     config = yaml.safe_load(f)
 
+# Prefer env (container) first, then config.yaml
 tracking_uri = os.getenv("MLFLOW_TRACKING_URI", config['mlflow']['tracking_uri'])
 mlflow.set_tracking_uri(tracking_uri)
+print(f"[train] Effective MLFLOW_TRACKING_URI = {mlflow.get_tracking_uri()}")
+
 experiment_name = os.getenv("MLFLOW_EXPERIMENT", config['mlflow']['experiment_name'])
 mlflow.set_experiment(experiment_name)
-
+print(f"[train] Using experiment = {experiment_name}")
 
 def load_data_from_db():
     conn = sqlite3.connect(config['data']['database'])
