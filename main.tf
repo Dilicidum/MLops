@@ -121,11 +121,13 @@ resource "aws_instance" "app" {
 
   user_data = templatefile("${path.module}/user_data.sh", {
     repo_url    = var.repo_url
+    repo_ref    = var.repo_ref
     bucket_name = aws_s3_bucket.ml.bucket
     region      = var.aws_region
     api_port    = var.api_port
     mlflow_port = var.mlflow_port
   })
+
   user_data_replace_on_change = true
   tags = { Name = "pricing-ec2" }
 }
