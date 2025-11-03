@@ -19,7 +19,8 @@ with open('config.yaml', 'r') as f:
 
 tracking_uri = os.getenv("MLFLOW_TRACKING_URI", config['mlflow']['tracking_uri'])
 mlflow.set_tracking_uri(tracking_uri)
-mlflow.set_experiment(config['mlflow']['experiment_name'])
+experiment_name = os.getenv("MLFLOW_EXPERIMENT", config['mlflow']['experiment_name'])
+mlflow.set_experiment(experiment_name)
 
 
 def load_data_from_db():

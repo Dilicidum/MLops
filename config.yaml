@@ -19,10 +19,9 @@ api:
   host: "0.0.0.0"
   port: 5000
 
-# MLFlow settings (local)
 mlflow:
-  tracking_uri: "file:./mlruns"
-  experiment_name: "dynamic_pricing"
+  tracking_uri: http://mlflow:5000   # good default for Docker
+  experiment_name: pricing-baseline
 
 # Business constraints
 pricing:
