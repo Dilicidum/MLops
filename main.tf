@@ -1,10 +1,4 @@
-data "aws_vpc" "default" {
-  default = true
-}
 
-data "aws_subnet_ids" "default" {
-  vpc_id = data.aws_vpc.default.id
-}
 
 data "aws_ami" "ubuntu" {
   most_recent = true
@@ -13,19 +7,6 @@ data "aws_ami" "ubuntu" {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
-}
-
-data "archive_file" "app_zip" {
-  type        = "zip"
-  source_dir  = var.app_path
-  output_path = "${path.module}/app.zip"
-}
-
-resource "aws_s3_object" "app_bundle" {
-  bucket = aws_s3_bucket.ml.bucket
-  key    = "deploy/app.zip"
-  source = data.archive_file.app_zip.output_path
-  etag   = filemd5(data.archive_file.app_zip.output_path)
 }
 
 # Unique bucket name
@@ -101,11 +82,8 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 # Security Group
 resource "aws_security_group" "sg" {
   name        = "pricing-sg"
-  description = "Allow SSH (optional), API, MLflow"
-  vpc_id      = data.aws_vpc.default.id
-
-  # SSH optional: leave closed if only SSM is used
-  # ingress { from_port = 22 to_port = 22 protocol = "tcp" cidr_blocks = [var.allow_cidr] }
+  description = "Allow API, MLflow"
+  vpc_id      = aws_vpc.main.id # <-- UPDATED
 
   ingress {
     from_port   = var.api_port
@@ -132,10 +110,11 @@ resource "aws_security_group" "sg" {
 }
 
 # EC2 with SSM (no key pair)
+# EC2 instance
 resource "aws_instance" "app" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
-  subnet_id                   = element(data.aws_subnet_ids.default.ids, 0)
+  subnet_id                   = aws_subnet.public.id # <-- UPDATED
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.sg.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
@@ -147,13 +126,13 @@ resource "aws_instance" "app" {
     api_port    = var.api_port
     mlflow_port = var.mlflow_port
   })
-
+  user_data_replace_on_change = true
   tags = { Name = "pricing-ec2" }
 }
 
 resource "aws_eip" "ip" {
   instance = aws_instance.app.id
-  vpc      = true
+  domain   = "vpc"
 }
 
 output "bucket_name" { value = aws_s3_bucket.ml.bucket }

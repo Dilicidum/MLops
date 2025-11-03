@@ -1,29 +1,24 @@
-FROM python:3.9-slim
+# Dockerfile
+FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# System deps for scientific libs
+RUN apt-get update && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
+# Use a recent pip
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN python -m pip install --upgrade pip
+
+# Install Python deps first (layer cache)
 COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application files
+# Copy app
 COPY . .
 
-# Create necessary directories
+# Runtime dirs (models are created at runtime)
 RUN mkdir -p data models mlruns
 
-# Train initial model (optional, can be done externally)
-RUN python train_model.py
-
-# Expose port
 EXPOSE 5000
-
-# Run API
 CMD ["python", "api.py"]

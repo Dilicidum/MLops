@@ -4,10 +4,10 @@ variable "aws_region" {
   default     = "eu-central-1"
 }
 
-variable "app_path" {
-  description = "Local path to your pricing app (contains Dockerfile, api.py, train_model.py, config.yaml, requirements.txt, etc.)"
+variable "repo_url" {
+  description = "Git repo URL with your project (Dockerfile, api.py, train_model.py, config.yaml, requirements.txt)"
   type        = string
-  default     = "./"  # set to your current folder or ./app
+  default     = "https://github.com/Dilicidum/MLops.git"
 }
 
 variable "allow_cidr" {
@@ -18,8 +18,8 @@ variable "allow_cidr" {
 
 variable "instance_type" {
   description = "EC2 size"
-  type        = string
-  default     = "t3.large"
+  type    = string
+  default = "t3.small"
 }
 
 variable "api_port" {
@@ -30,4 +30,23 @@ variable "api_port" {
 variable "mlflow_port" {
   type    = number
   default = 5001
+}
+
+variable "vpc_cidr" {
+  description = "VPC CIDR"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "public_subnet_cidr" {
+  description = "Public subnet CIDR"
+  type        = string
+  default     = "10.0.1.0/24"
+}
+
+variable "availability_zone" {
+  description = "AZ for the public subnet (optional)"
+  type        = string
+  default     = null
+  # e.g. "eu-central-1a" if you want to pin it
 }
